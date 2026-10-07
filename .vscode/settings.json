@@ -1,0 +1,6 @@
+{
+    "python.defaultInterpreterPath": "C:\\Career Lens\\venv\\Scripts\\python.exe",
+    "python.analysis.extraPaths": [
+        "C:\\Career Lens\\venv\\Lib\\site-packages"
+    ]
+}
