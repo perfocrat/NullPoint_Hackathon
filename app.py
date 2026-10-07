@@ -1,6 +1,5 @@
-from flask import Flask, send_from_directory, jsonify, request
 import os
-
+from flask import Flask, send_from_directory, jsonify, request
 from backend.portfolio_analyzer import PortfolioAnalyzer
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
