@@ -263,49 +263,29 @@ form.addEventListener("submit", async function (event) {
 
     try {
 
-        console.log("Profile submitted:");
+    console.log("Sending profile to CareerLens backend...");
 
-        console.log({
-            resume: resume.name,
-            github: github,
-            portfolio: portfolio,
-            linkedin: linkedin,
-            targetRole: targetRole.value
-        });
+    const analysis = await analyzeProfile(formData);
 
+    console.log("Analysis received:", analysis);
 
-        /*
-            Temporary delay.
+    // Store real analysis temporarily
+    sessionStorage.setItem(
+        "careerLensAnalysis",
+        JSON.stringify(analysis)
+    );
 
-            Later this will become:
+    // Go to dashboard
+    window.location.href = "dashboard.html";
 
-            await analyzeProfile(formData);
-        */
+} catch (error) {
 
-        await new Promise(resolve => {
-            setTimeout(resolve, 700);
-        });
+    console.error("Profile submission failed:", error);
 
+    setLoadingState(false);
 
-        /* Go to analysis loading page */
-
-        window.location.href = "loading.html";
-
-
-    } catch (error) {
-
-        console.error(
-            "Profile submission failed:",
-            error
-        );
-
-        setLoadingState(false);
-
-        alert(
-            "Something went wrong while submitting your profile."
-        );
-
-    }
+    alert(error.message || "Something went wrong while analyzing your profile.");
+}
 
 });
 

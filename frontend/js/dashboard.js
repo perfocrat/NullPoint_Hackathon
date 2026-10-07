@@ -12,203 +12,150 @@
    DO NOT build the dashboard around hardcoded HTML.
    The backend will simply replace this object.
    ========================================================= */
+const storedAnalysis =
+    sessionStorage.getItem("careerLensAnalysis");
 
-const analysisData = {
+if (!storedAnalysis) {
+    alert("No analysis data found. Please run a new analysis.");
+    window.location.href = "input.html";
+}
 
-    score: 78,
+const rawAnalysis = JSON.parse(storedAnalysis);
 
-    targetRole: "Backend Developer",
+console.log(
+    "Real CareerLens analysis:",
+    rawAnalysis
+);
 
-    scoreStatus: "Strong",
+function buildDashboardData(data) {
 
-    explanation:
-        "Your profile demonstrates strong technical evidence, but there are a few important gaps between your current experience and your target role.",
+    const metrics = data.metrics || {};
 
+    // Convert backend metric objects into percentages
+    const getMetric = (name) => {
 
-    /* ==================== SCORE BREAKDOWN ==================== */
+        const metric = metrics[name];
 
-    breakdown: {
+        if (!metric) return 0;
 
-        skillMatch: 82,
-
-        projectEvidence: 78,
-
-        projectQuality: 74,
-
-        activity: 69,
-
-        roleRequirements: 76
-
-    },
-
-
-    /* ==================== SKILLS ==================== */
-
-    skills: [
-
-        {
-            name: "Python",
-            status: "verified",
-            evidence: "6 repositories"
-        },
-
-        {
-            name: "SQL",
-            status: "verified",
-            evidence: "3 projects"
-        },
-
-        {
-            name: "Flask",
-            status: "supported",
-            evidence: "2 projects"
-        },
-
-        {
-            name: "Git",
-            status: "verified",
-            evidence: "Regular repository activity"
-        },
-
-        {
-            name: "Docker",
-            status: "unverified",
-            evidence: "No observable evidence"
+        if (typeof metric === "number") {
+            return Math.round(metric * 100);
         }
 
-    ],
-
-
-    /* ==================== GAPS ==================== */
-
-    gaps: [
-
-        {
-            priority: "High Priority",
-
-            name: "Docker",
-
-            description:
-                "Your target role expects containerization experience, but there is currently no strong evidence of Docker usage.",
-
-            action:
-                "Containerize one existing project."
-        },
-
-        {
-            priority: "High Priority",
-
-            name: "REST APIs",
-
-            description:
-                "Backend roles typically require experience designing and consuming REST APIs.",
-
-            action:
-                "Build a Flask REST API."
-        },
-
-        {
-            priority: "Medium Priority",
-
-            name: "Testing",
-
-            description:
-                "Your profile has limited evidence of automated software testing.",
-
-            action:
-                "Add unit tests to an existing project."
+        if (typeof metric.value === "number") {
+            return Math.round(metric.value * 100);
         }
 
-    ],
+        return 0;
+    };
 
 
-    /* ==================== ROLE FIT ==================== */
+    // Calculate overall readiness
+    const metricValues = [
+        getMetric("consistency"),
+        getMetric("tech_depth"),
+        getMetric("frameworks"),
+        getMetric("breadth"),
+        getMetric("integrity"),
+        getMetric("products"),
+        getMetric("deployment"),
+        getMetric("collaboration"),
+        getMetric("documentation"),
+        getMetric("proximity"),
+        getMetric("gap"),
+        getMetric("ecosystem")
+    ];
 
-    roles: [
+    const validMetrics = metricValues.filter(value => value > 0);
 
-        {
-            name: "Backend Developer",
-            fit: 84,
-            primary: true,
-            description:
-                "Strong alignment with your Python, SQL and Flask experience."
+    const score = validMetrics.length
+        ? Math.round(
+            validMetrics.reduce((sum, value) => sum + value, 0)
+            / validMetrics.length
+        )
+        : 0;
+
+
+    // Verified skills
+    const skills = (data.verified_skills || []).map(skill => ({
+        name: skill,
+        status: "verified",
+        evidence: "Verified through GitHub evidence"
+    }));
+
+
+    // Unverified claims
+    const gaps = (data.unverified_claims || []).map(skill => ({
+        priority: data.missing_track_skills?.includes(skill)
+            ? "High Priority"
+            : "Medium Priority",
+
+        name: skill,
+
+        description:
+            `Your resume claims ${skill}, but the available GitHub evidence does not currently verify it.`,
+
+        action:
+            `Add a project demonstrating ${skill}.`
+    }));
+
+
+    return {
+
+        score: score,
+
+        targetRole: data.track,
+
+        scoreStatus:
+            score >= 75
+                ? "Strong"
+                : score >= 50
+                    ? "Developing"
+                    : "Needs Improvement",
+
+        breakdown: {
+            skillMatch: getMetric("integrity"),
+            projectEvidence: getMetric("products"),
+            projectQuality: getMetric("documentation"),
+            activity: getMetric("consistency"),
+            roleRequirements: getMetric("proximity")
         },
 
-        {
-            name: "Python Developer",
-            fit: 81,
-            primary: false,
-            description:
-                "Your Python evidence makes this another strong career match."
-        },
+        skills: skills,
 
-        {
-            name: "Full Stack Developer",
-            fit: 72,
-            primary: false,
-            description:
-                "Good foundation, but frontend and deployment evidence can improve."
-        }
+        gaps: gaps,
 
-    ],
+        roles: [
+            {
+                name: data.track,
+                fit: score,
+                primary: true,
+                description:
+                    `Your current profile alignment with ${data.track}.`
+            }
+        ],
+
+        roadmap: (data.missing_track_skills || []).map(
+            (skill, index) => ({
+                phase: `Phase ${String(index + 1).padStart(2, "0")}`,
+                duration: `Week ${index + 1}`,
+                title: `Build ${skill} evidence`,
+                description:
+                    `Strengthen your ${skill} experience with a practical project.`,
+                task:
+                    `Create a project demonstrating ${skill}.`
+            })
+        )
+    };
+}
 
 
-    /* ==================== ROADMAP ==================== */
+const analysisData = buildDashboardData(rawAnalysis);
 
-    roadmap: [
-
-        {
-            phase: "Phase 01",
-            duration: "Week 1",
-            title: "Build a REST API",
-
-            description:
-                "Learn REST principles and build a production-style API using Flask.",
-
-            task:
-                "Build a Flask REST API"
-        },
-
-        {
-            phase: "Phase 02",
-            duration: "Week 2",
-            title: "Learn Docker",
-
-            description:
-                "Understand containers and package your existing project into a Docker image.",
-
-            task:
-                "Dockerize your project"
-        },
-
-        {
-            phase: "Phase 03",
-            duration: "Week 3",
-            title: "Add Automated Testing",
-
-            description:
-                "Learn unit testing and add meaningful tests to your backend application.",
-
-            task:
-                "Write API tests"
-        },
-
-        {
-            phase: "Phase 04",
-            duration: "Week 4",
-            title: "Deploy Your Application",
-
-            description:
-                "Deploy your project and create observable evidence of your deployment skills.",
-
-            task:
-                "Deploy the project"
-        }
-
-    ]
-
-};
-
+console.log(
+    "Dashboard data:",
+    analysisData
+);
 
 /* =========================================================
    ELEMENTS

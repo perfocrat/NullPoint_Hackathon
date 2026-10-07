@@ -1,10 +1,14 @@
 from flask import Flask, send_from_directory, jsonify, request
 import os
 
+from backend.portfolio_analyzer import PortfolioAnalyzer
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")
 
 app = Flask(__name__)
+
+analyzer = PortfolioAnalyzer()
 
 
 # =========================
@@ -30,7 +34,6 @@ def analyze():
 
     resume = request.files.get("resume")
     github = request.form.get("github", "")
-    portfolio = request.form.get("portfolio", "")
     linkedin = request.form.get("linkedin", "")
     target_role = request.form.get("targetRole", "")
 
@@ -40,71 +43,58 @@ def analyze():
             "error": "Resume is required."
         }), 400
 
+    if not github:
+        return jsonify({
+            "success": False,
+            "error": "GitHub URL is required."
+        }), 400
+
     if not target_role:
         return jsonify({
             "success": False,
             "error": "Target role is required."
         }), 400
 
-    # Temporary result
-    analysis = {
-        "score": 78,
-        "targetRole": target_role,
-        "scoreStatus": "Strong",
+    # Read resume
+    try:
+        if resume.filename.lower().endswith(".pdf"):
+            from pypdf import PdfReader
+            import io
 
-        "breakdown": {
-            "skillMatch": 82,
-            "projectEvidence": 78,
-            "projectQuality": 74,
-            "activity": 69,
-            "roleRequirements": 76
-        },
+            reader = PdfReader(io.BytesIO(resume.read()))
 
-        "skills": [
-            {
-                "name": "Python",
-                "status": "verified",
-                "evidence": "6 repositories"
-            },
-            {
-                "name": "SQL",
-                "status": "verified",
-                "evidence": "3 projects"
-            }
-        ],
+            resume_text = "\n".join(
+                page.extract_text() or ""
+                for page in reader.pages
+            )
+        else:
+            resume_text = resume.read().decode("utf-8", errors="ignore")
 
-        "gaps": [
-            {
-                "priority": "High Priority",
-                "name": "Docker",
-                "description": "Limited Docker evidence.",
-                "action": "Containerize one existing project."
-            }
-        ],
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": f"Could not read resume: {str(e)}"
+        }), 400
 
-        "roles": [
-            {
-                "name": "Backend Developer",
-                "fit": 84,
-                "primary": True,
-                "description": "Strong backend alignment."
-            }
-        ],
+    # Send data to the real CareerLens analysis engine
+    result = analyzer.post_analyze_candidate({
+        "resume_text": resume_text,
+        "github_url": github,
+        "track": target_role,
+        "github_token": "",
+        "deep_scan": False,
+        "linkedin_text": linkedin
+    })
 
-        "roadmap": [
-            {
-                "phase": "Phase 01",
-                "duration": "Week 1",
-                "title": "Build a REST API",
-                "description": "Create a Flask REST API.",
-                "task": "Build a Flask REST API"
-            }
-        ]
-    }
+    if not result.get("ok"):
+        return jsonify({
+            "success": False,
+            "error": result.get("error", "Analysis failed.")
+        }), 400
 
     return jsonify({
         "success": True,
-        "analysis": analysis
+        "analysis": result
     })
 
 
