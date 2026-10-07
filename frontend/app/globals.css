@@ -1,0 +1,183 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Space Mono", ui-monospace, monospace;
+  --color-ink: #090b12;
+  --color-panel: #101522;
+  --color-line: rgba(169, 180, 207, 0.14);
+  --color-lilac: #a899ff;
+  --color-mint: #75edcf;
+  --color-muted: #9aa4ba;
+}
+
+:root {
+  color-scheme: dark;
+  background: #090b12;
+  font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  color: #f5f6fb;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(ellipse at 78% 8%, rgba(116, 92, 255, 0.17), transparent 34rem),
+    radial-gradient(ellipse at 10% 58%, rgba(62, 193, 166, 0.055), transparent 31rem),
+    linear-gradient(rgba(155, 170, 205, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(155, 170, 205, 0.025) 1px, transparent 1px),
+    #090b12;
+  background-size: auto, auto, 56px 56px, 56px 56px, auto;
+  background-attachment: fixed;
+}
+
+.hero-atmosphere::before,
+.hero-atmosphere::after {
+  position: absolute;
+  z-index: 0;
+  border-radius: 50%;
+  content: "";
+  pointer-events: none;
+  filter: blur(48px);
+  will-change: transform;
+}
+
+.hero-atmosphere::before {
+  top: 8%;
+  right: 1%;
+  width: min(48vw, 560px);
+  aspect-ratio: 1;
+  background: radial-gradient(circle, rgba(139, 124, 255, .17), transparent 68%);
+  animation: liquid-drift 18s ease-in-out infinite alternate;
+}
+
+.hero-atmosphere::after {
+  right: 25%;
+  bottom: 3%;
+  width: min(32vw, 340px);
+  aspect-ratio: 1;
+  background: radial-gradient(circle, rgba(62, 193, 166, .09), transparent 70%);
+  animation: liquid-drift 23s ease-in-out -5s infinite alternate-reverse;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translate3d(0, 18px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes liquid-drift {
+  0% { transform: translate3d(0, 0, 0) scale(.92); }
+  50% { transform: translate3d(-20px, 16px, 0) scale(1.04); }
+  100% { transform: translate3d(14px, -18px, 0) scale(.98); }
+}
+
+.page-enter {
+  animation: page-enter .38s cubic-bezier(.2, .7, .2, 1) both;
+}
+
+@keyframes page-enter {
+  from { opacity: 0; transform: translate3d(0, 8px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes menu-in {
+  from { opacity: 0; transform: translate3d(0, -5px, 0) scale(.98); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+
+button,
+a,
+input,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+label:focus-within {
+  outline: 2px solid #a899ff;
+  outline-offset: 3px;
+}
+
+::selection {
+  color: white;
+  background: rgba(139, 124, 255, 0.45);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-atmosphere::before,
+  .hero-atmosphere::after,
+  .page-enter {
+    animation: none !important;
+  }
+
+  details[open] nav {
+    animation: none !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  :root {
+    color-scheme: light;
+    color: #111827;
+    background: #fff;
+  }
+
+  body {
+    color: #111827;
+    background: #fff;
+  }
+
+  .report-chrome,
+  .report-footer,
+  button,
+  a[href="/analyze"] {
+    display: none !important;
+  }
+
+  main {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  article,
+  section {
+    break-inside: avoid;
+  }
+}

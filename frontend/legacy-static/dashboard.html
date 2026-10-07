@@ -1,0 +1,681 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="CareerLens - Your career readiness analysis"
+    >
+
+    <title>Dashboard | CareerLens</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <!-- Global styles -->
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Dashboard styles -->
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/polish.css">
+
+</head>
+
+
+<body>
+
+    <!-- =====================================================
+         NAVBAR
+         ===================================================== -->
+
+    <header class="dashboard-navbar">
+
+        <a href="index.html" class="logo">
+            CareerLens
+        </a>
+
+        <div class="dashboard-nav-right">
+
+            <span class="analysis-status">
+                Analysis Complete
+            </span>
+
+            <button
+                class="print-report-button"
+                id="printReportButton"
+                type="button"
+            >
+                <span aria-hidden="true">↧</span>
+                Print / Save PDF
+            </button>
+
+            <button
+                class="new-analysis-button"
+                id="newAnalysisButton"
+            >
+                New Analysis
+            </button>
+
+        </div>
+
+    </header>
+
+
+    <!-- =====================================================
+         DASHBOARD
+         ===================================================== -->
+
+    <main class="dashboard">
+
+        <!-- =================================================
+             HEADER
+             ================================================= -->
+
+        <section class="dashboard-header">
+
+            <div>
+
+                <p class="eyebrow">
+                    CAREER READINESS REPORT
+                </p>
+
+                <h1>
+                    Your CareerLens Report
+                </h1>
+
+                <p class="dashboard-subtitle">
+                    Here's how your current profile compares
+                    with your target role.
+                </p>
+
+            </div>
+
+            <div class="target-role">
+
+                <span>
+                    TARGET ROLE
+                </span>
+
+                <strong id="targetRole">
+                    Backend Developer
+                </strong>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             TOP GRID
+             ================================================= -->
+
+        <section class="top-grid">
+
+
+            <!-- ==================== SCORE ==================== -->
+
+            <article class="score-card">
+
+                <div class="card-header">
+
+                    <div>
+                        <span class="card-label">
+                            JOB READINESS
+                        </span>
+
+                        <h2>
+                            Overall Score
+                        </h2>
+                    </div>
+
+                    <span class="score-status">
+                        Strong
+                    </span>
+
+                </div>
+
+
+                <div class="score-display">
+
+                    <div
+                        class="score-circle"
+                        role="img"
+                        aria-label="Job readiness score: 78 out of 100"
+                    >
+
+                        <svg
+                            class="score-ring"
+                            viewBox="0 0 180 180"
+                            aria-hidden="true"
+                        >
+
+                            <circle
+                                class="score-ring-background"
+                                cx="90"
+                                cy="90"
+                                r="76"
+                            ></circle>
+
+                            <circle
+                                class="score-ring-progress"
+                                cx="90"
+                                cy="90"
+                                r="76"
+                                id="scoreRing"
+                            ></circle>
+
+                        </svg>
+
+                        <div class="score-number">
+
+                            <strong id="readinessScore">
+                                78
+                            </strong>
+
+                            <span>
+                                /100
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="score-explanation">
+
+                    <strong>
+                        You're on the right track.
+                    </strong>
+
+                    <p id="scoreExplanation">
+                        Your profile demonstrates strong technical
+                        evidence, but there are a few important gaps
+                        between your current experience and your target role.
+                    </p>
+
+                </div>
+
+            </article>
+
+
+            <!-- ==================== SCORE BREAKDOWN ==================== -->
+
+            <article class="breakdown-card">
+
+                <div class="card-header">
+
+                    <div>
+                        <span class="card-label">
+                            SCORE BREAKDOWN
+                        </span>
+
+                        <h2>
+                            Why this score?
+                        </h2>
+                    </div>
+
+                </div>
+
+
+                <div class="breakdown-list">
+
+
+                    <div class="breakdown-item">
+
+                        <div class="breakdown-info">
+
+                            <span>
+                                Skill Match
+                            </span>
+
+                            <strong>
+                                82%
+                            </strong>
+
+                        </div>
+
+                        <div class="mini-progress">
+                            <div
+                                class="mini-progress-fill"
+                                style="width: 82%"
+                            ></div>
+                        </div>
+
+                    </div>
+
+
+                    <div class="breakdown-item">
+
+                        <div class="breakdown-info">
+
+                            <span>
+                                Project Evidence
+                            </span>
+
+                            <strong>
+                                78%
+                            </strong>
+
+                        </div>
+
+                        <div class="mini-progress">
+                            <div
+                                class="mini-progress-fill"
+                                style="width: 78%"
+                            ></div>
+                        </div>
+
+                    </div>
+
+
+                    <div class="breakdown-item">
+
+                        <div class="breakdown-info">
+
+                            <span>
+                                Project Quality
+                            </span>
+
+                            <strong>
+                                74%
+                            </strong>
+
+                        </div>
+
+                        <div class="mini-progress">
+                            <div
+                                class="mini-progress-fill"
+                                style="width: 74%"
+                            ></div>
+                        </div>
+
+                    </div>
+
+
+                    <div class="breakdown-item">
+
+                        <div class="breakdown-info">
+
+                            <span>
+                                Activity
+                            </span>
+
+                            <strong>
+                                69%
+                            </strong>
+
+                        </div>
+
+                        <div class="mini-progress">
+                            <div
+                                class="mini-progress-fill"
+                                style="width: 69%"
+                            ></div>
+                        </div>
+
+                    </div>
+
+
+                    <div class="breakdown-item">
+
+                        <div class="breakdown-info">
+
+                            <span>
+                                Role Requirements
+                            </span>
+
+                            <strong>
+                                76%
+                            </strong>
+
+                        </div>
+
+                        <div class="mini-progress">
+                            <div
+                                class="mini-progress-fill"
+                                style="width: 76%"
+                            ></div>
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+            </article>
+
+        </section>
+
+
+        <!-- =================================================
+             VERIFIED SKILLS
+             ================================================= -->
+
+        <section class="dashboard-section">
+
+            <div class="section-heading-row">
+
+                <div>
+
+                    <span class="card-label">
+                        EVIDENCE ANALYSIS
+                    </span>
+
+                    <h2>
+                        Your Skills
+                    </h2>
+
+                </div>
+
+                <span class="evidence-summary" id="skillsSummary">
+                    5 skills analyzed
+                </span>
+
+            </div>
+
+
+            <div class="skills-grid" id="skillsGrid">
+
+                <!-- Generated by dashboard.js -->
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             SKILL GAPS
+             ================================================= -->
+
+        <section class="dashboard-section">
+
+            <div class="section-heading-row">
+
+                <div>
+
+                    <span class="card-label">
+                        WHAT'S MISSING
+                    </span>
+
+                    <h2>
+                        Skill Gaps
+                    </h2>
+
+                </div>
+
+                <span class="gap-count" id="gapsSummary">
+                    3 priority gaps
+                </span>
+
+            </div>
+
+
+            <div class="gaps-grid" id="gapsGrid">
+
+                <!-- Generated by dashboard.js -->
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             ROLE FIT
+             ================================================= -->
+
+        <section class="dashboard-section">
+
+            <div class="section-heading-row">
+
+                <div>
+
+                    <span class="card-label">
+                        CAREER MATCH
+                    </span>
+
+                    <h2>
+                        Best Fit Roles
+                    </h2>
+
+                </div>
+
+                <span class="evidence-summary">
+                    Based on your current evidence
+                </span>
+
+            </div>
+
+
+            <div
+                class="role-grid"
+                id="roleGrid"
+            >
+
+                <!-- Generated by dashboard.js -->
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             EVIDENCE EXPLANATION
+             ================================================= -->
+
+        <section class="evidence-section">
+
+            <div class="evidence-heading">
+
+                <span class="card-label">
+                    WHY IT MATTERS
+                </span>
+
+                <h2>
+                    Evidence behind your score
+                </h2>
+
+                <p>
+                    CareerLens doesn't simply trust the skills listed
+                    on your resume. Your claims are compared against
+                    observable evidence from your projects and profiles.
+                </p>
+
+            </div>
+
+
+            <div class="evidence-columns">
+
+
+                <div class="evidence-column">
+
+                    <div class="evidence-column-header">
+
+                        <span class="evidence-dot verified-dot"></span>
+
+                        <strong>
+                            Verified
+                        </strong>
+
+                    </div>
+
+                    <p>
+                        Strong evidence exists to support the skill claim.
+                    </p>
+
+                    <div class="evidence-example">
+                        Python · 6 repositories
+                    </div>
+
+                </div>
+
+
+                <div class="evidence-column">
+
+                    <div class="evidence-column-header">
+
+                        <span class="evidence-dot supported-dot"></span>
+
+                        <strong>
+                            Supported
+                        </strong>
+
+                    </div>
+
+                    <p>
+                        Evidence exists, but it is less substantial.
+                    </p>
+
+                    <div class="evidence-example">
+                        SQL · 3 projects
+                    </div>
+
+                </div>
+
+
+                <div class="evidence-column">
+
+                    <div class="evidence-column-header">
+
+                        <span class="evidence-dot unverified-dot"></span>
+
+                        <strong>
+                            Unverified
+                        </strong>
+
+                    </div>
+
+                    <p>
+                        Your profile claims the skill, but evidence is weak
+                        or currently missing.
+                    </p>
+
+                    <div class="evidence-example">
+                        Docker · No observable evidence
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             ROADMAP
+             ================================================= -->
+
+        <section class="dashboard-section roadmap-section">
+
+            <div class="section-heading-row">
+
+                <div>
+
+                    <span class="card-label">
+                        NEXT STEPS
+                    </span>
+
+                    <h2>
+                        Your Personalized Roadmap
+                    </h2>
+
+                </div>
+
+                <span class="roadmap-duration" id="roadmapSummary">
+                    4 phases
+                </span>
+
+            </div>
+
+
+            <div
+                class="roadmap"
+                id="roadmap"
+            >
+
+                <!-- Generated by dashboard.js -->
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             FINAL CTA
+             ================================================= -->
+
+        <section class="dashboard-cta">
+
+            <div>
+
+                <span class="card-label">
+                    KEEP BUILDING
+                </span>
+
+                <h2>
+                    Your score is a starting point.
+                </h2>
+
+                <p>
+                    Build projects, strengthen your evidence and
+                    come back to measure your progress.
+                </p>
+
+            </div>
+
+            <button
+                class="new-analysis-button large"
+                id="newAnalysisButtonBottom"
+            >
+                Run New Analysis
+            </button>
+
+        </section>
+
+    </main>
+
+
+    <!-- =====================================================
+         FOOTER
+         ===================================================== -->
+
+    <footer class="footer">
+
+        <div class="logo">
+            CareerLens
+        </div>
+
+        <p>
+            AI-powered employability and career readiness analyzer.
+        </p>
+
+        <p class="copyright">
+            &copy; 2026 CareerLens. DataQuest 3.0
+        </p>
+
+    </footer>
+
+
+    <!-- Dashboard JavaScript -->
+    <script src="js/dashboard.js"></script>
+    <script src="js/motion.js"></script>
+
+</body>
+
+</html>
+```
