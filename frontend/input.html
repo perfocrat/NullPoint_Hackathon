@@ -1,0 +1,412 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="CareerLens - Submit your profile for career readiness analysis"
+    >
+
+    <title>Analyze Profile | CareerLens</title>
+
+    <!-- Global styles -->
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Input page styles -->
+    <link rel="stylesheet" href="css/input.css">
+
+</head>
+
+
+<body>
+
+    <!-- ==================== NAVBAR ==================== -->
+
+    <header class="navbar">
+
+        <a href="index.html" class="logo">
+            CareerLens
+        </a>
+
+        <nav class="nav-links">
+
+            <a href="index.html">
+                Home
+            </a>
+
+            <a href="index.html#features">
+                Features
+            </a>
+
+            <a href="index.html#how-it-works">
+                How It Works
+            </a>
+
+        </nav>
+
+        <div class="nav-page-label">
+            Profile Analysis
+        </div>
+
+    </header>
+
+
+    <!-- ==================== MAIN ==================== -->
+
+    <main class="input-page">
+
+        <!-- Page heading -->
+
+        <section class="input-header">
+
+            <p class="eyebrow">
+                PROFILE ANALYSIS
+            </p>
+
+            <h1>
+                Tell us about yourself.
+            </h1>
+
+            <p>
+                Provide your resume and professional profiles.
+                CareerLens will use them to evaluate your career readiness.
+            </p>
+
+        </section>
+
+
+        <!-- ==================== FORM ==================== -->
+
+        <form
+            id="profileForm"
+            class="profile-form"
+            enctype="multipart/form-data"
+        >
+
+
+            <!-- ==================== RESUME ==================== -->
+
+            <section class="form-section">
+
+                <div class="section-label">
+
+                    <span class="section-number">
+                        01
+                    </span>
+
+                    <div>
+
+                        <h2>
+                            Resume
+                        </h2>
+
+                        <p>
+                            Upload your latest resume.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <label
+                    for="resume"
+                    class="resume-upload"
+                    id="resumeUpload"
+                >
+
+                    <div class="upload-icon">
+                        ↑
+                    </div>
+
+                    <div class="upload-content">
+
+                        <strong>
+                            Upload your resume
+                        </strong>
+
+                        <span>
+                            PDF, DOC or DOCX · Max 10 MB
+                        </span>
+
+                    </div>
+
+                    <span class="browse-text">
+                        Browse
+                    </span>
+
+                    <input
+                        type="file"
+                        id="resume"
+                        name="resume"
+                        accept=".pdf,.doc,.docx"
+                        hidden
+                    >
+
+                </label>
+
+                <p
+                    id="resumeError"
+                    class="input-error"
+                ></p>
+
+            </section>
+
+
+            <!-- ==================== PROFILE LINKS ==================== -->
+
+            <section class="form-section">
+
+                <div class="section-label">
+
+                    <span class="section-number">
+                        02
+                    </span>
+
+                    <div>
+
+                        <h2>
+                            Profile Links
+                        </h2>
+
+                        <p>
+                            Add the platforms where your work can be verified.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="profile-links">
+
+
+                    <!-- GitHub -->
+
+                    <div class="form-field">
+
+                        <label for="github">
+                            GitHub
+                            <span>Recommended</span>
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <div class="input-prefix">
+                                github.com/
+                            </div>
+
+                            <input
+                                type="url"
+                                id="github"
+                                name="github"
+                                placeholder="username"
+                            >
+
+                        </div>
+
+                        <p class="field-hint">
+                            Your repositories and coding activity will be analyzed.
+                        </p>
+
+                    </div>
+
+
+                    <!-- Portfolio -->
+
+                    <div class="form-field">
+
+                        <label for="portfolio">
+                            Portfolio
+                            <span>Optional</span>
+                        </label>
+
+                        <input
+                            type="url"
+                            id="portfolio"
+                            name="portfolio"
+                            placeholder="https://yourportfolio.com"
+                        >
+
+                        <p class="field-hint">
+                            Add your personal or project portfolio.
+                        </p>
+
+                    </div>
+
+
+                    <!-- LinkedIn -->
+
+                    <div class="form-field">
+
+                        <label for="linkedin">
+                            Professional Profile
+                            <span>Optional</span>
+                        </label>
+
+                        <input
+                            type="url"
+                            id="linkedin"
+                            name="linkedin"
+                            placeholder="https://linkedin.com/in/username"
+                        >
+
+                        <p class="field-hint">
+                            Add your LinkedIn or other professional profile.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ==================== TARGET ROLE ==================== -->
+
+            <section class="form-section">
+
+                <div class="section-label">
+
+                    <span class="section-number">
+                        03
+                    </span>
+
+                    <div>
+
+                        <h2>
+                            Target Role
+                        </h2>
+
+                        <p>
+                            What career are you preparing for?
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="role-selection">
+
+                    <label for="targetRole">
+                        Target career role
+                    </label>
+
+                    <select
+                        id="targetRole"
+                        name="targetRole"
+                    >
+
+                        <option value="" selected disabled>
+                            Select a role
+                        </option>
+
+                        <option value="backend-developer">
+                            Backend Developer
+                        </option>
+
+                        <option value="frontend-developer">
+                            Frontend Developer
+                        </option>
+
+                        <option value="fullstack-developer">
+                            Full Stack Developer
+                        </option>
+
+                        <option value="data-scientist">
+                            Data Scientist
+                        </option>
+
+                        <option value="ml-engineer">
+                            Machine Learning Engineer
+                        </option>
+
+                        <option value="software-engineer">
+                            Software Engineer
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </section>
+
+
+            <!-- ==================== SUBMIT ==================== -->
+
+            <section class="submit-section">
+
+                <div class="submit-info">
+
+                    <div class="info-icon">
+                        i
+                    </div>
+
+                    <p>
+                        Your profile will be analyzed against the
+                        requirements of your selected role.
+                    </p>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="analyze-button"
+                    id="analyzeButton"
+                >
+
+                    <span>
+                        Analyze My Profile
+                    </span>
+
+                    <span class="button-arrow">
+                        →
+                    </span>
+
+                </button>
+
+            </section>
+
+
+        </form>
+
+    </main>
+
+
+    <!-- ==================== FOOTER ==================== -->
+
+    <footer class="footer">
+
+        <div class="logo">
+            CareerLens
+        </div>
+
+        <p>
+            AI-powered employability and career readiness analyzer.
+        </p>
+
+        <p class="copyright">
+            &copy; 2026 CareerLens. DataQuest 3.0
+        </p>
+
+    </footer>
+
+
+    <!-- Input page JavaScript -->
+    <script src="js/input.js"></script>
+
+</body>
+
+</html>
+```

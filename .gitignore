@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Secrets
+.env
+.env.*
+
+# Uploaded resumes/files
+uploads/*
+!uploads/.gitkeep
+
+# macOS
+.DS_Store
+
+# VS Code
+.vscode/
+
+# Testing
+.pytest_cache/
+.coverage
