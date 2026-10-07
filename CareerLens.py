@@ -79,12 +79,13 @@ def load_market_bundle(path: str):
 
 
 @st.cache_data(ttl=300, show_spinner=False)
-def cached_live_analysis(resume_text: str, github_url: str, track: str, token: str, deep_scan: bool) -> Dict[str, Any]:
+def cached_live_analysis(resume_text: str, github_url: str, track: str, token: str, deep_scan: bool,
+                         linkedin_text: str = "") -> Dict[str, Any]:
     """Runs portfolio_analyzer.py live; results are memoised in memory for 5 minutes so that
     re-renders do not burn the GitHub rate limit."""
     return PortfolioAnalyzer().post_analyze_candidate({
         "resume_text": resume_text, "github_url": github_url, "track": track,
-        "github_token": token, "deep_scan": deep_scan,
+        "github_token": token, "deep_scan": deep_scan, "linkedin_text": linkedin_text,
     })
 
 
@@ -171,6 +172,9 @@ def main() -> None:
         if uploaded is not None and not resume_text.strip():
             resume_text = read_uploaded_resume(uploaded)
             st.caption(f"Loaded {len(resume_text):,} characters from {uploaded.name}")
+        raw_linkedin_text = st.text_area(
+            "Paste Candidate LinkedIn Public Activity Stream Text / Post Logs Here:", value="", height=120,
+            placeholder="Paste recent posts, featured text, or written recommendations from your LinkedIn profile layout...")
     with c2:
         github_url = st.text_input("Public GitHub profile link", placeholder="https://github.com/username")
         track = st.selectbox("Target global track role", list(TRACK_BASELINES.keys()))
@@ -182,7 +186,8 @@ def main() -> None:
             st.warning("Provide both the resume text and a GitHub profile link.")
         else:
             with st.spinner("Reading the live GitHub API..."):
-                st.session_state["result"] = cached_live_analysis(resume_text, github_url, track, token, deep_scan)
+                st.session_state["result"] = cached_live_analysis(resume_text, github_url, track, token, deep_scan,
+                                                                    raw_linkedin_text)
                 st.session_state["resume_text"] = resume_text
 
     result = st.session_state.get("result")
@@ -213,6 +218,12 @@ def main() -> None:
                    + (f"rate limit left: {remaining}" if remaining is not None else "rate limit unknown")
                    + (" | authenticated" if meta["authenticated"] else " | unauthenticated (60/h)")
                    + (" | deep scan" if meta["deep_scan"] else ""))
+
+        li = result.get("linkedin", {})
+        if li.get("provided"):
+            found = [f"{t} x{c}" for t, c in {**li["milestones"], **li["attestations"]}.items()]
+            st.caption("LinkedIn signals parsed: " + (", ".join(found) if found else "none detected")
+                       + " | self-supplied text, so boosts are capped (ecosystem lift <= 60% of headroom, integrity <= +15%).")
 
         st.subheader("Verified tech skills")
         if result["verified_skills"]:

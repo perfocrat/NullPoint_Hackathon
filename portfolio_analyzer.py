@@ -18,8 +18,8 @@ from __future__ import annotations
 
 import json
 import math
-import ssl
 import re
+import socket
 import time
 import urllib.error
 import urllib.parse
@@ -163,6 +163,34 @@ DEPLOY_ANCHORS: List[str] = [
 ]
 
 
+# --------------------------------------------------------------------------- #
+# LinkedIn signal vocabulary (unstructured text pasted by the user)
+# --------------------------------------------------------------------------- #
+LINKEDIN_MILESTONES: Dict[str, "re.Pattern[str]"] = {
+    "hackathon": re.compile(r"\bhackathons?\b", re.I),
+    "shipped": re.compile(r"\bship(?:ped|ping)\b", re.I),
+    "deployed": re.compile(r"\bdeploy(?:ed|ing|ment)\b", re.I),
+    "conference": re.compile(r"\bconferences?\b", re.I),
+    "open-source": re.compile(r"\bopen[\s-]?source\b", re.I),
+    "engineered": re.compile(r"\bengineer(?:ed|ing)\b", re.I),
+    "launched": re.compile(r"\blaunch(?:ed|ing)\b", re.I),
+    "scaled": re.compile(r"\bscal(?:ed|ing)\b", re.I),
+}
+# term -> (regex, weight). Third-party language (recommended / endorsed) carries full weight;
+# first-person managerial language is weaker evidence because the candidate controls it.
+LINKEDIN_ATTESTATIONS: Dict[str, Tuple["re.Pattern[str]", float]] = {
+    "recommended": (re.compile(r"\brecommend(?:ed|s|ation|ations)\b", re.I), 1.0),
+    "endorsed": (re.compile(r"\bendors(?:ed|es|ement|ements)\b", re.I), 1.0),
+    "managed": (re.compile(r"\bmanaged\b", re.I), 0.5),
+    "supervised": (re.compile(r"\bsupervis(?:ed|ion)\b", re.I), 0.5),
+    "collaborated with": (re.compile(r"\bcollaborated\s+with\b", re.I), 0.5),
+}
+LINKEDIN_TERM_CAP = 3            # one term counts at most 3x -> repeating a keyword cannot inflate the score
+ECOSYSTEM_MAX_LIFT = 0.60        # share of the remaining headroom that LinkedIn milestones can fill
+INTEGRITY_MAX_MULTIPLIER = 1.15  # attestations can raise integrity by at most +15 %
+LINKEDIN_VERIFIED_LABEL = "Verified via LinkedIn Activity Stream and Peer Endorsements"
+
+
 def _norm(text: str) -> str:
     """Lower-case and collapse separators so 'deep-learning' == 'deep learning'."""
     return re.sub(r"[-_/]+", " ", (text or "").lower())
@@ -270,7 +298,38 @@ class GitHubError(RuntimeError):
     """Raised for any GitHub / network problem with a user-presentable message."""
 
 
-def _http_get_json(url: str, token: Optional[str] = None, timeout: int = 15) -> Tuple[Any, Dict[str, str]]:
+class _IPv4Only:
+    """Context manager: resolve hostnames to IPv4 only (fixes networks with a broken IPv6 route)."""
+
+    def __enter__(self):
+        self._orig = socket.getaddrinfo
+        orig = self._orig
+
+        def ipv4_only(host, port, family=0, type=0, proto=0, flags=0):
+            return orig(host, port, socket.AF_INET, type, proto, flags)
+
+        socket.getaddrinfo = ipv4_only
+        return self
+
+    def __exit__(self, *exc):
+        socket.getaddrinfo = self._orig
+        return False
+
+
+def _urlopen_read(request: "urllib.request.Request", timeout: int) -> str:
+    """Open the request; on a connect timeout / network error retry once over IPv4 only."""
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            return response.read().decode("utf-8"), {k.lower(): v for k, v in response.headers.items()}
+    except (urllib.error.URLError, TimeoutError) as exc:
+        if isinstance(exc, urllib.error.HTTPError):
+            raise
+        with _IPv4Only():
+            with urllib.request.urlopen(request, timeout=timeout) as response:
+                return response.read().decode("utf-8"), {k.lower(): v for k, v in response.headers.items()}
+
+
+def _http_get_json(url: str, token: Optional[str] = None, timeout: int = 25) -> Tuple[Any, Dict[str, str]]:
     headers = {
         "Accept": "application/vnd.github+json",
         "User-Agent": USER_AGENT,
@@ -280,9 +339,8 @@ def _http_get_json(url: str, token: Optional[str] = None, timeout: int = 15) -> 
         headers["Authorization"] = f"Bearer {token.strip()}"  # 5,000 req/hour instead of 60
     request = urllib.request.Request(url, headers=headers, method="GET")
     try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
-            body = response.read().decode("utf-8")
-            return json.loads(body), {k.lower(): v for k, v in response.headers.items()}
+        body, resp_headers = _urlopen_read(request, timeout)
+        return json.loads(body), resp_headers
     except urllib.error.HTTPError as exc:
         remaining = exc.headers.get("X-RateLimit-Remaining") if exc.headers else None
         if exc.code == 404:
@@ -294,7 +352,8 @@ def _http_get_json(url: str, token: Optional[str] = None, timeout: int = 15) -> 
                               "Add a personal access token to raise it to 5,000/hour.") from exc
         raise GitHubError(f"GitHub API returned HTTP {exc.code}.") from exc
     except urllib.error.URLError as exc:
-        raise GitHubError(f"Network error while contacting GitHub: {exc.reason}") from exc
+        raise GitHubError(f"Network error while contacting GitHub: {exc.reason}. Check VPN/proxy/firewall, "
+                          "or test: curl -4 https://api.github.com") from exc
     except TimeoutError as exc:
         raise GitHubError("GitHub API request timed out.") from exc
     except json.JSONDecodeError as exc:
@@ -404,6 +463,7 @@ class PortfolioAnalyzer:
         track = request_payload.get("track") or "Core Software Engineer"
         token = (request_payload.get("github_token") or "").strip() or None
         deep_scan = bool(request_payload.get("deep_scan", False))
+        linkedin_text = request_payload.get("linkedin_text", "") or ""
 
         if track not in TRACK_BASELINES:
             return {"ok": False, "error": f"Unknown target track: {track}"}
@@ -430,6 +490,8 @@ class PortfolioAnalyzer:
         missing = [s for s in baseline if evidence[s] == 0]
 
         metrics = self._compute_metrics(repos, extra_langs, claimed, evidence, strength, baseline, missing)
+        linkedin = self.analyze_linkedin_text(linkedin_text)
+        self._apply_linkedin_signals(metrics, linkedin)
 
         return {
             "ok": True,
@@ -442,6 +504,7 @@ class PortfolioAnalyzer:
             "track_baseline": baseline,
             "missing_track_skills": missing,
             "metrics": metrics,
+            "linkedin": linkedin,
             "vector": [metrics[k]["value"] for k in DIMENSION_KEYS],
             "meta": {
                 "repos": len(repos),
@@ -454,6 +517,54 @@ class PortfolioAnalyzer:
                 "fetched_at": time.time(),
             },
         }
+
+    # ---- LinkedIn text stream --------------------------------------------- #
+    def analyze_linkedin_text(self, text: str) -> Dict[str, Any]:
+        """Ecosystem Density Scan + Peer-Attestation Verification Matrix over pasted LinkedIn text."""
+        text = text or ""
+        milestones = {term: min(LINKEDIN_TERM_CAP, len(rx.findall(text))) for term, rx in LINKEDIN_MILESTONES.items()}
+        milestones = {t: c for t, c in milestones.items() if c > 0}
+        attestations = {term: min(LINKEDIN_TERM_CAP, len(rx.findall(text)))
+                        for term, (rx, _) in LINKEDIN_ATTESTATIONS.items()}
+        attestations = {t: c for t, c in attestations.items() if c > 0}
+
+        # density: 60 % coverage of distinct milestone types, 40 % capped frequency
+        distinct_ratio = len(milestones) / len(LINKEDIN_MILESTONES)
+        freq_ratio = min(1.0, sum(milestones.values()) / 10.0)
+        density = 0.6 * distinct_ratio + 0.4 * freq_ratio
+
+        attest_weight = sum(LINKEDIN_ATTESTATIONS[t][1] * c for t, c in attestations.items())
+        return {
+            "provided": bool(text.strip()),
+            "chars": len(text),
+            "milestones": milestones,
+            "attestations": attestations,
+            "density": round(density, 4),
+            "attestation_weight": round(attest_weight, 2),
+            "milestones_active": bool(milestones),
+            "attestations_active": bool(attestations),
+        }
+
+    @staticmethod
+    def _apply_linkedin_signals(metrics: Dict[str, Dict[str, Any]], linkedin: Dict[str, Any]) -> None:
+        """Fold LinkedIn evidence into the existing 12-D dictionary (in place).
+        Both boosts are bounded and are applied ON TOP of the GitHub-derived base value:
+          ecosystem: base + (1 - base) * 0.6 * density
+          integrity: base * min(1.15, 1 + 0.05 * attestation_weight)   (a 0 base stays 0)
+        """
+        if linkedin["milestones_active"]:
+            m = metrics["ecosystem"]
+            base = m["value"]
+            m["base_value"] = base
+            m["value"] = round(_clip(base + (1.0 - base) * ECOSYSTEM_MAX_LIFT * linkedin["density"]), 4)
+            m["display"] = f"{LINKEDIN_VERIFIED_LABEL} \u00b7 {m['display']}"
+        if linkedin["attestations_active"]:
+            m = metrics["integrity"]
+            base = m["value"]
+            m["base_value"] = base
+            multiplier = min(INTEGRITY_MAX_MULTIPLIER, 1.0 + 0.05 * linkedin["attestation_weight"])
+            m["value"] = round(_clip(base * multiplier), 4)
+            m["display"] = f"{LINKEDIN_VERIFIED_LABEL} \u00b7 {m['display']}"
 
     # ---- the 12 dimensions ------------------------------------------------ #
     def _compute_metrics(self, repos: List[dict], extra_langs: Dict[str, List[str]], claimed: List[str],
